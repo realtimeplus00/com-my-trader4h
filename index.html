@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>AUTO TRADER</title>
+<style>
+:root{--bg:#080d17;--card:#0f1726;--tile:#141e31;--line:#1f2d45;--tx:#d3dcea;--mut:#6e7f9a;
+--teal:#2dd4bf;--grn:#16a34a;--red:#ef4444;--org:#f59e0b;--pur:#a78bfa;
+--mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"D2Coding",monospace}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font:14px/1.5 var(--mono);
+padding:max(16px,env(safe-area-inset-top)) 14px max(24px,env(safe-area-inset-bottom));max-width:520px;margin:0 auto}
+button,input{font:inherit;color:inherit}
+.hide{display:none!important}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:16px}
+h1{font-size:24px;letter-spacing:.2em}
+.sub{color:var(--teal);font-size:11px;letter-spacing:.25em}
+.pill{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--card);
+border-radius:8px;padding:8px 12px;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 8px var(--grn)}
+.pill.off .dot{background:var(--red);box-shadow:0 0 8px var(--red)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.ttl{color:var(--mut);font-size:12px;display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ttl::after{content:"";flex:1;height:1px;background:var(--line)}
+.hero{text-align:center;padding:4px 0 14px}
+.hero .ic{font-size:40px;line-height:1.2}
+.hero .msg{color:var(--mut);letter-spacing:.15em;margin:4px 0}
+.hero .coin{font-size:34px;font-weight:700;letter-spacing:.12em}
+.hero .ph{color:var(--teal);font-size:11px;letter-spacing:.2em}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--tile);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.tile small{display:block;color:var(--mut);font-size:11px}
+.tile b{display:block;font-size:17px;margin-top:2px;word-break:keep-all}
+.up{color:var(--red)}.dn{color:#60a5fa}
+.btns{display:flex;gap:10px;margin-top:14px}
+.btn{flex:1;border:1px solid var(--line);background:var(--tile);border-radius:10px;padding:13px 8px;cursor:pointer;font-weight:600}
+.btn:disabled{opacity:.5}
+.btn.go{background:#14532d;border-color:#166534}.btn.stop{background:var(--red);border-color:var(--red);color:#fff}
+.btn.pur{border-color:#5b4a9c;color:var(--pur)}.btn.sq{flex:0 0 52px}
+label{display:block;color:var(--mut);font-size:12px;margin:14px 0 6px}
+input[type=text],input[type=password],input[type=number]{width:100%;background:var(--bg);border:1px solid var(--line);
+border-radius:10px;padding:13px 14px;font-size:16px}
+input:focus,.btn:focus-visible,.chip:focus-visible,.seg button:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.srv{background:var(--tile);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;
+justify-content:space-between;gap:8px;flex-wrap:wrap}
+.srv small{display:block;color:var(--mut);font-size:11px}.srv b{font-size:20px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{background:var(--tile);border:1px solid var(--line);border-radius:10px;padding:12px 6px;cursor:pointer}
+.seg button.on{border-color:var(--teal);color:var(--teal);background:#0e2a2c}
+.hint{color:var(--mut);font-size:11px;margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{background:var(--tile);border:1px solid var(--line);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12px;color:var(--mut)}
+.chip.on{border-color:var(--teal);color:var(--teal)}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0 4px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0}
+.row small{display:block;color:var(--mut);font-size:11px}
+.sw{position:relative;width:52px;height:30px;flex:none}
+.sw input{opacity:0;position:absolute;inset:0;width:100%;height:100%;cursor:pointer;margin:0;z-index:1}
+.sw i{position:absolute;inset:0;border-radius:15px;background:var(--line);transition:.2s}
+.sw i::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s}
+.sw input:checked+i{background:#3b82f6}.sw input:checked+i::after{left:25px}
+.err{background:#3a1218;border:1px solid #7f1d1d;color:#fca5a5;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:12px;word-break:break-all}
+.env{display:flex;gap:14px;font-size:11px;color:var(--mut);margin-top:10px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:12px}
+th{color:var(--mut);text-align:left;font-weight:400;padding:10px;background:var(--tile)}
+td{padding:10px;border-top:1px solid var(--line);white-space:nowrap}
+td:first-child{border-left:3px solid}
+tr.b td:first-child{border-color:var(--grn);color:#4ade80}tr.s td:first-child{border-color:var(--red);color:#f87171}
+.sum{color:var(--mut);font-size:12px;margin-bottom:10px}
+.empty{color:var(--mut);text-align:center;padding:24px 0;font-size:12px}
+#toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#1b2942;
+border:1px solid var(--line);padding:11px 16px;border-radius:10px;font-size:13px;max-width:92%;z-index:9}
+#toast.bad{border-color:var(--red);color:#fca5a5}
+</style>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="AUTO 4H">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#7c3aed">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>{
+        navigator.serviceWorker.register('./service-worker.js');
+      });
+    }
+    window.addEventListener('beforeinstallprompt',e=>{
+      e.preventDefault();
+      window._pwaE=e;
+      var b=document.createElement('div');
+      b.style='position:fixed;bottom:0;left:0;right:0;background:#7c3aed;color:#fff;padding:18px;text-align:center;z-index:9999;font-size:15px;font-weight:bold;cursor:pointer;font-family:sans-serif;';
+      b.innerHTML='📲 홈화면에 앱 추가하기 · Add to Home Screen';
+      b.onclick=async function(){window._pwaE.prompt();var r=await window._pwaE.userChoice;if(r.outcome==='accepted')b.remove();};
+      document.body.appendChild(b);
+    });
+  </script>
+</head>
+<body>
+
+<header>
+  <div><h1>AUTO TRADER</h1><div class="sub">UPBIT · MA STRATEGY</div></div>
+  <div id="top" class="hide" style="display:flex;gap:8px">
+    <div class="pill" id="conn"><span class="dot"></span><span id="connTx">연결됨</span></div>
+    <button class="pill" id="logout" style="cursor:pointer">로그아웃</button>
+  </div>
+</header>
+
+<!-- 서버 연결 (최초 1회) -->
+<section id="login" class="card hide">
+  <div class="ttl">서버 연결</div>
+  <label for="srv" style="margin-top:0">서버 주소</label>
+  <input type="text" id="srv" placeholder="http://서버IP:8768" autocapitalize="off" autocomplete="off">
+  <label for="key">API 키 (서버 .env 의 TRADER_API_KEY)</label>
+  <input type="password" id="key" autocomplete="off">
+  <div class="btns"><button class="btn go" id="connect">연결</button></div>
+  <div class="hint">서버 포트는 8768입니다. 주소와 키는 이 기기 브라우저에만 저장됩니다.</div>
+  <div class="err hide" id="loginErr"></div>
+</section>
+
+<main id="app" class="hide">
+  <!-- 현재 상태 -->
+  <section class="card">
+    <div class="ttl">현재 상태</div>
+    <div class="hero">
+      <div class="ic" id="ic">⏳</div><div class="msg" id="msg">-</div>
+      <div class="coin" id="coin">-</div><div class="ph" id="ph">-</div>
+    </div>
+    <div class="grid">
+      <div class="tile"><small>상태</small><b id="stTx">-</b></div>
+      <div class="tile"><small>마지막 거래</small><b id="lastTr">-</b></div>
+      <div class="tile"><small>마지막 신호</small><b id="lastSig">-</b></div>
+      <div class="tile"><small>다음 판정</small><b id="next">-</b></div>
+      <div class="tile hold hide"><small>매수가</small><b id="ep">-</b></div>
+      <div class="tile hold hide"><small>현재가 · 손익</small><b id="cp">-</b></div>
+    </div>
+    <div class="err hide" id="stErr"></div>
+    <div class="btns">
+      <button class="btn go" id="start">▶ 자동매매 시작</button>
+      <button class="btn stop" id="stop">■ 중단</button>
+      <button class="btn sq" id="refresh" title="새로고침">🔄</button>
+    </div>
+  </section>
+
+  <!-- 전략 설정 -->
+  <section class="card">
+    <div class="ttl">전략 설정</div>
+    <div class="srv">
+      <div><small>COIN</small><b style="color:var(--teal)" id="sCoin">-</b></div>
+      <div><small>기본 MA</small><b id="sMain">-</b></div>
+      <div><small>보조 MA</small><b id="sSub">-</b></div>
+      <div><small>판정 시각</small><b style="color:var(--org);font-size:14px" id="sTimes">-</b></div>
+    </div>
+    <div class="env"><span id="envUp">업비트 -</span><span id="envTg">텔레그램 -</span></div>
+
+    <label>차트 기준</label>
+    <div class="seg">
+      <button type="button" data-tf="day">일봉</button>
+      <button type="button" data-tf="4h">4시간봉</button>
+    </div>
+    <div class="hint" id="tfHint"></div>
+
+    <label for="coinIn">코인</label>
+    <input type="text" id="coinIn" autocapitalize="characters" autocomplete="off">
+    <div class="chips" id="chips"></div>
+
+    <label for="mainIn" id="mainLb">기본 MA</label>
+    <input type="number" id="mainIn" inputmode="numeric" min="2" max="190">
+    <label for="subIn" id="subLb">보조 MA (손절용)</label>
+    <input type="number" id="subIn" inputmode="numeric" min="2" max="190">
+
+    <hr>
+    <div class="row">
+      <div><b>정기 상태 알림</b><small>매일 09:00 업비트 보유현황 텔레그램 알림</small></div>
+      <label class="sw" style="margin:0"><input type="checkbox" id="alertIn" aria-label="정기 상태 알림"><i></i></label>
+    </div>
+    <div class="btns">
+      <button class="btn" id="save">설정 저장</button>
+      <button class="btn" id="tgTest">텔레그램 테스트</button>
+      <button class="btn pur" id="now">📊 현재 상태 전송</button>
+    </div>
+  </section>
+
+  <!-- 거래 내역 -->
+  <section class="card">
+    <div class="ttl">거래 내역</div>
+    <div class="sum" id="sum"></div>
+    <div class="scroll"><table>
+      <thead><tr><th>구분</th><th>일시</th><th>체결가</th><th>금액</th><th>손익</th><th>사유</th></tr></thead>
+      <tbody id="trades"></tbody>
+    </table></div>
+    <div class="empty hide" id="noTr">아직 거래 내역이 없습니다.</div>
+  </section>
+</main>
+<div id="toast" class="hide"></div>
+
+<script>
+// ───────── 기본값 ─────────
+const DEF = { day: {main: 20, sub: 5}, "4h": {main: 120, sub: 5} };   // 차트 기준별 기본 MA
+const TFINFO = {
+  day:  {name: "일봉",    hint: "매일 09:00 하루 1회, 마감된 일봉 종가 기준으로 판정합니다."},
+  "4h": {name: "4시간봉", hint: "01·05·09·13·17·21시 하루 6회, 마감된 4시간봉 종가 기준으로 판정합니다."}
+};
+const COINS = ["BTC","ETH","XRP","SOL","DOGE","ADA","AVAX","DOT"];
+const SIG = {buy:"매수", buy_sub:"재매수(보조MA)", sell_main:"기본MA 이탈", sell_stop:"손절", sell_sub:"보조MA 이탈"};
+const $ = id => document.getElementById(id);
+
+// 저장소 (사용 불가 환경이면 메모리로 대체)
+const mem = {};
+const store = {
+  get(k){ try { return localStorage.getItem(k) } catch(e){ return mem[k] ?? null } },
+  set(k,v){ try { localStorage.setItem(k,v) } catch(e){ mem[k] = v } },
+  del(k){ try { localStorage.removeItem(k) } catch(e){ delete mem[k] } }
+};
+
+let base = "", apiKey = "", tf = "day", cfg = null, timer = null, formDirty = false;
+
+// ───────── 공통 ─────────
+function toast(t, bad){
+  const el = $("toast"); el.textContent = t; el.className = bad ? "bad" : "";
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.add("hide"), 3200);
+}
+async function api(path, method = "GET", body){
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 15000);
+  try {
+    const r = await fetch(base + path, {
+      method, signal: ctl.signal,
+      headers: {"X-API-Key": apiKey, "Content-Type": "application/json"},
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(d.error || ("오류 " + r.status)); e.status = r.status; throw e; }
+    return d;
+  } finally { clearTimeout(to); }
+}
+const won = n => n == null ? "-" : Math.round(n).toLocaleString("ko-KR") + "원";
+const setConn = ok => { $("conn").classList.toggle("off", !ok); $("connTx").textContent = ok ? "연결됨" : "연결 끊김"; };
+
+// ───────── 화면 전환 / 로그인 ─────────
+function showLogin(msg){
+  clearInterval(timer);
+  $("login").classList.remove("hide"); $("app").classList.add("hide"); $("top").classList.add("hide");
+  $("srv").value = base || (location.protocol.startsWith("http") ? location.origin : "http://:8768");
+  const e = $("loginErr"); e.textContent = msg || ""; e.classList.toggle("hide", !msg);
+}
+async function connect(){
+  base = $("srv").value.trim().replace(/\/+$/, ""); apiKey = $("key").value.trim() || apiKey;
+  if (!/^https?:\/\//.test(base) || !apiKey) return showLogin("서버 주소(http://…)와 API 키를 모두 입력하세요.");
+  $("connect").disabled = true;
+  try {
+    await api("/trader/health");                  // 서버 응답 확인
+    cfg = await api("/trader/config");            // API 키 확인
+    store.set("tr_base", base); store.set("tr_key", apiKey);
+    $("login").classList.add("hide"); $("app").classList.remove("hide"); $("top").classList.remove("hide");
+    $("top").style.display = "flex";
+    fillForm(cfg); await refresh();
+    clearInterval(timer); timer = setInterval(() => !document.hidden && refresh(true), 10000);
+  } catch(e) {
+    showLogin(e.status === 401 ? "API 키가 올바르지 않습니다. 서버 .env 의 TRADER_API_KEY 를 확인하세요."
+      : "서버에 연결할 수 없습니다. 주소·포트(8768)·방화벽을 확인하세요.");
+  } finally { $("connect").disabled = false; }
+}
+
+// ───────── 설정 폼 ─────────
+function setTf(v, auto){
+  const old = tf; tf = v;
+  document.querySelectorAll(".seg button").forEach(b => b.classList.toggle("on", b.dataset.tf === v));
+  $("tfHint").textContent = TFINFO[v].hint;
+  $("mainLb").textContent = `기본 MA (${TFINFO[v].name})`;
+  $("subLb").textContent = `보조 MA (${TFINFO[v].name} · 손절용)`;
+  // 입력값이 이전 기준의 기본값 그대로면 새 기준의 기본값으로 자동 변경
+  if (auto && old !== v && +$("mainIn").value === DEF[old].main && +$("subIn").value === DEF[old].sub) {
+    $("mainIn").value = DEF[v].main; $("subIn").value = DEF[v].sub;
+  }
+}
+function fillForm(c){
+  $("coinIn").value = c.coin; $("mainIn").value = c.main_ma; $("subIn").value = c.sub_ma;
+  $("alertIn").checked = c.status_alert; setTf(c.timeframe, false); markChips(); formDirty = false;
+}
+function showServerCfg(c){
+  $("sCoin").textContent = c.coin;
+  $("sMain").textContent = c.main_ma + (c.timeframe === "day" ? "일" : "봉");
+  $("sSub").textContent = c.sub_ma + (c.timeframe === "day" ? "일" : "봉");
+  $("sTimes").textContent = c.timeframe === "day" ? "09:00 일봉" : `4시간봉 ${c.check_times.length}회/일`;
+  $("envUp").textContent = "업비트 " + (c.upbit_configured ? "✅" : "❌ .env 확인");
+  $("envTg").textContent = "텔레그램 " + (c.tg_configured ? "✅" : "❌ .env 확인");
+}
+function markChips(){
+  const v = $("coinIn").value.trim().toUpperCase();
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c.textContent === v));
+}
+async function save(){
+  const body = {coin: $("coinIn").value.trim().toUpperCase(), timeframe: tf,
+    main_ma: +$("mainIn").value, sub_ma: +$("subIn").value, status_alert: $("alertIn").checked};
+  if (cfg.running && (body.timeframe !== cfg.timeframe || body.main_ma !== cfg.main_ma || body.sub_ma !== cfg.sub_ma)
+      && !confirm("자동매매가 실행 중입니다.\n저장하면 다음 판정 시각부터 새 설정이 적용됩니다. 저장할까요?")) return;
+  try {
+    await api("/trader/config", "POST", body);
+    cfg = await api("/trader/config"); showServerCfg(cfg); fillForm(cfg); await refresh(true);
+    toast("설정을 저장했습니다");
+  } catch(e) { toast(e.message, true); }
+}
+
+// ───────── 상태 / 거래내역 ─────────
+async function refresh(quiet){
+  try {
+    const [s, c] = await Promise.all([api("/trader/state"), api("/trader/config")]);
+    cfg = c; setConn(true); showServerCfg(c); renderState(s); renderTrades(s.trades || []);
+    if (!formDirty) fillForm(c);
+    if (!quiet) toast("새로고침 완료");
+  } catch(e) {
+    if (e.status === 401) return showLogin("API 키가 변경되었습니다. 다시 입력하세요.");
+    setConn(false); if (!quiet) toast("서버 응답 없음: " + e.message, true);
+  }
+}
+function renderState(s){
+  const run = s.running, hold = s.holding;
+  $("ic").textContent = !run ? "⛔" : hold ? "📈" : "⏳";
+  $("msg").textContent = !run ? "자동매매 중단됨" : hold ? "보유 중 · 매도 신호 대기" : "매수 신호 대기 중";
+  $("coin").textContent = s.coin; $("ph").textContent = "PHASE: " + (s.phase || "-").toUpperCase();
+  $("stTx").textContent = !run ? "중단됨" : hold ? "보유 중" : "대기 중";
+  $("lastTr").textContent = s.last_trade || "-";
+  $("lastSig").textContent = s.last_signal || "-";
+  $("next").textContent = s.next_check ? s.next_check.slice(5) : "-";
+  document.querySelectorAll(".hold").forEach(t => t.classList.toggle("hide", !hold));
+  if (hold) {
+    $("ep").textContent = won(s.entry_price);
+    const pct = s.current_price && s.entry_price ? (s.current_price - s.entry_price) / s.entry_price * 100 : null;
+    $("cp").innerHTML = won(s.current_price) + (pct == null ? "" :
+      ` <span class="${pct >= 0 ? "up" : "dn"}">${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%</span>`);
+  }
+  $("start").disabled = run; $("stop").disabled = !run;
+  const e = $("stErr"); e.textContent = s.error ? "⚠️ " + s.error : ""; e.classList.toggle("hide", !s.error);
+}
+function renderTrades(list){
+  const rows = [...list].reverse();
+  $("noTr").classList.toggle("hide", rows.length > 0);
+  const sells = rows.filter(t => t.type === "sell"), total = sells.reduce((a, t) => a + (t.profit || 0), 0);
+  $("sum").textContent = rows.length ? `최근 ${rows.length}건 · 매도 ${sells.length}회 · 실현손익 ${total >= 0 ? "+" : ""}${Math.round(total).toLocaleString("ko-KR")}원` : "";
+  $("trades").innerHTML = rows.map(t => {
+    const buy = t.type === "buy";
+    const pl = buy ? "-" : `<span class="${t.profit >= 0 ? "up" : "dn"}">${t.profit >= 0 ? "+" : ""}${Math.round(t.profit).toLocaleString("ko-KR")}원 (${t.pct.toFixed(2)}%)</span>`;
+    return `<tr class="${buy ? "b" : "s"}"><td>${buy ? "▲매수" : "▼매도"}</td><td>${t.time}</td><td>${won(t.price)}</td><td>${won(t.amount)}</td><td>${pl}</td><td>${SIG[t.signal] || "-"}${t.tf ? " · " + (t.tf === "4h" ? "4시간" : "일") : ""}</td></tr>`;
+  }).join("");
+}
+
+// ───────── 버튼 동작 ─────────
+async function act(btn, path, ok, ask){
+  if (ask && !confirm(ask)) return;
+  btn.disabled = true;
+  try { await api(path, "POST"); toast(ok); await refresh(true); }
+  catch(e) { toast(e.message, true); }
+  finally { btn.disabled = false; }
+}
+$("connect").onclick = connect;
+$("key").onkeydown = e => e.key === "Enter" && connect();
+$("logout").onclick = () => { store.del("tr_key"); apiKey = ""; $("key").value = ""; showLogin("로그아웃했습니다."); };
+$("refresh").onclick = () => refresh();
+$("start").onclick = () => act($("start"), "/trader/start", "자동매매를 시작했습니다",
+  `${$("coin").textContent} ${cfg.tf_label} MA${cfg.main_ma} 자동매매를 시작할까요?\n(실제 주문이 실행됩니다)`);
+$("stop").onclick = () => act($("stop"), "/trader/stop", "자동매매를 중단했습니다", "자동매매를 중단할까요?\n(보유 중인 코인은 자동으로 매도되지 않습니다)");
+$("save").onclick = save;
+$("tgTest").onclick = () => act($("tgTest"), "/trader/alert_test", "텔레그램 테스트 메시지를 보냈습니다");
+$("now").onclick = () => act($("now"), "/trader/status_now", "현재 상태를 텔레그램으로 보냈습니다");
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => { setTf(b.dataset.tf, true); formDirty = true; });
+["coinIn","mainIn","subIn","alertIn"].forEach(id => $(id).addEventListener("input", () => { formDirty = true; markChips(); }));
+$("chips").innerHTML = COINS.map(c => `<button type="button" class="chip">${c}</button>`).join("");
+$("chips").onclick = e => { if (e.target.classList.contains("chip")) { $("coinIn").value = e.target.textContent; formDirty = true; markChips(); } };
+
+// ───────── 시작 ─────────
+base = store.get("tr_base") || ""; apiKey = store.get("tr_key") || "";
+if (base && apiKey) { $("srv").value = base; connect(); } else showLogin();
+</script>
+</body>
+</html>
